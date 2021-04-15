@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+	<label for="inputfile">Select Mars Rover Input file:</label>
+	<input type="file" name="inputfile" id="inputfile">
+	
+
+	<pre id="input"></pre>
+	<pre id="output"></pre>
+	
+	<script type="text/javascript">
+//Global vars
+		txt="none", txtarray="none", NewPosX=0, NewPosY=0, NewHeading="none", turn="none";
+    
+//Asks for input txt file, reads it, processes multiline file to convert each line
+//into a full line array, listens to load event and triggers Function Finished.    
+	
+	document.getElementById('inputfile')
+			.addEventListener('change', function() {
+						
+			var fr=new FileReader();
+			fr.onload=function(){
+				document.getElementById('input')
+						.innerHTML="Input:" + "<br>" + fr.result + "<br>";
+                txt=fr.result;
+                txtarray=txt.split('\n');
+            }
+			fr.readAsText(this.files[0]);
+			fr.addEventListener('load',Finished);
+            
+        })
+
+//Processes first line array and splits it into a character array removing blank spaces, sets max plateau boundaries.
+//Starts a for loop to process line arrays starting from second line calling Function Reader to do it. If already has processed
+//a pair of lines prints current position and heading of first rover.		
+		function Finished () {
+				var strarray = txtarray[0].split(" ");
+				var xmax = strarray[0];
+				var ymax = strarray[1];
+				var strlength = txtarray.length;
+				var HisOutput = document.getElementById('output').innerHTML;
+				document.getElementById('output').innerHTML="Output: " + "<br>";
+				for(var i = 1;i < strlength;i++){
+					Reader(txtarray[i],i);
+					if (i % 2 == 0){document.getElementById('output').innerHTML=HisOutput + NewPosX + " " + NewPosY + " " + NewHeading + "<br>";}
+					HisOutput = document.getElementById('output').innerHTML;
+				}
+		}
+		
+//Function Reader receives the line array and for-loop counter as parameters. Decides, based on counter, if its the first line of the pair: odd line.
+//If so, sets x and y coordinates and heading. If its an even line, meaning move and turn orders, iterates over characters (forEach). If character
+//is "M", calls Function Move. Otherwise, calls Function Heading because its a turn order ("L" or "R").
+
+		function Reader(strarray, i) {
+		
+			if(i % 2 == 0) {
+				var commands=strarray.split("");
+				commands.forEach(function(entry) {
+				if (entry == "M") {
+					Move();
+				}
+				else {
+					NewHeading = Heading(entry, NewHeading);
+					}
+				});
+				}
+			else {
+				NewPosX=strarray[0];
+				NewPosY=strarray[2];
+				NewHeading=strarray[4];
+			}
+		}
+
+//Function Heading receives parameters turn direction and heading, returns new heading. On a Switch-case clause sets new Heading accordingly.
+		function Heading(_turn, _NewHeading)
+		{
+		
+			switch(_turn) {
+				case "L":
+					switch(_NewHeading) {
+						case "N": NewHeading="W"; break;
+						case "W": NewHeading="S"; break;
+						case "S": NewHeading="E"; break;
+						case "E": NewHeading="N"; break;
+						default: break;
+					}
+				case "R":
+					switch(_NewHeading) {
+						case "N": NewHeading="E"; break;
+						case "W": NewHeading="N"; break;
+						case "S": NewHeading="W"; break;
+						case "E": NewHeading="S"; break;
+						default: break;
+					}
+				default: break;
+			}
+		
+			return NewHeading;
+		}
+
+//Function Move	sets new position on a switch-case clause according to current heading.	
+		function Move() {
+		
+			switch(NewHeading) {
+				case "N": NewPosY++;break;
+				case "E": NewPosX++;break;
+				case "S": NewPosY--;break;
+				case "W": NewPosX--;break;
+				default: break;
+			}
+			
+		}
+		
+	</script>
+</body>
+
+</html>
+
